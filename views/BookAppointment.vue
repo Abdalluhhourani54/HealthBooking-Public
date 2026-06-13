@@ -1,4 +1,3 @@
-
 <template>
   <div>
     <nav class="navbar navbar-light bg-white shadow-sm mb-4">
@@ -50,8 +49,7 @@ export default {
     fetch("https://k1cuxs3mrd.execute-api.us-east-1.amazonaws.com/prod/slots")
       .then(res => res.json())
       .then(data => {
-        const parsed = JSON.parse(data.body);
-        this.slots = parsed.filter(s => !s.isBooked).map(s => s.slot);
+        this.slots = data.filter(s => !s.isBooked).map(s => s.slot);
       });
   },
   methods: {
@@ -65,7 +63,7 @@ export default {
       fetch("https://k1cuxs3mrd.execute-api.us-east-1.amazonaws.com/prod/appointments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: JSON.stringify(payload) })
+        body: JSON.stringify(payload)
       })
         .then(res => res.json())
         .then(() => {
@@ -73,6 +71,7 @@ export default {
           this.name = "";
           this.symptoms = "";
           this.selectedSlot = "";
+          this.slots = this.slots.filter(slot => slot !== payload.slot);
         })
         .catch(err => {
           console.error("Error booking appointment:", err);

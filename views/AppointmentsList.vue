@@ -1,4 +1,3 @@
-
 <template>
   <div>
     <nav class="navbar navbar-light bg-white shadow-sm mb-4">
@@ -62,18 +61,10 @@ export default {
       fetch("https://k1cuxs3mrd.execute-api.us-east-1.amazonaws.com/prod/appointments")
         .then(res => res.json())
         .then(data => {
-          const parsed = JSON.parse(data.body);
-          this.appointments = parsed;
+          this.appointments = data;
         });
     },
     updateStatus(appointment, newStatus) {
-      // Log the full appointment object and its ID
-      console.log(" appointment (proxy):", appointment);
-      const cleanAppointment = JSON.parse(JSON.stringify(appointment));
-      console.log(" Clean appointment:", cleanAppointment);
-      console.log("appointmentId:", cleanAppointment.appointmentId);
-      console.log(" appointmentId (direct):", appointment.appointmentId);
-
       const url = `https://k1cuxs3mrd.execute-api.us-east-1.amazonaws.com/prod/appointments/${appointment.appointmentId}`;
 
       const payload = { status: newStatus };
@@ -85,25 +76,24 @@ export default {
         },
         body: JSON.stringify(payload)
       })
-          .then(async res => {
+        .then(async res => {
+          const rawBody = await res.text();
 
-            const rawBody = await res.text();
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${rawBody}`);
+          }
 
-            if (!res.ok) {
-              throw new Error(`HTTP ${res.status}: ${rawBody}`);
-            }
-
-            return JSON.parse(rawBody);
-          })
-          .then(() => {
-            alert("Status updated!");
-          })
-          .catch(err => {
-            console.error(" Failed to update status:", err);
-            alert("Update failed. See console for details.");
-          });
+          return JSON.parse(rawBody);
+        })
+        .then(() => {
+          alert("Status updated!");
+          this.fetchAppointments();
+        })
+        .catch(err => {
+          console.error("Failed to update status:", err);
+          alert("Update failed. See console for details.");
+        });
     }
-
-     }
+  }
 };
 </script>
